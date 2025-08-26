@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+option csharp_namespace = "OceanView.WebAPI";
+
+package search;
+
+service GrpsSearchService {
+  rpc Search (SearchRequest) returns (SearchIdReply);
+  rpc Get (GetRequest) returns (HotelsReply);
+}
+
+message SearchRequest {
+  int32 Offset = 1;
+  int32 Limit = 2; 
+  string City = 3; 
+  string State = 4; 
+  string Country = 5; 
+}
+
+message GetRequest {
+  string Id = 1;
+}
+
+message SearchIdReply {
+  string Id = 1;
+}
+
+message HotelsReply {
+  repeated Hotel Hotels = 1;
+}
+
+message Hotel {
+  string Name = 1;
+  string City = 2;
+  string State = 3;
+  string Country = 4;
+  string Address = 5;
+  int32 Rating = 6;
+}

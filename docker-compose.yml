@@ -1,0 +1,66 @@
+services:
+  oceanview.webapi:
+    image: ${DOCKER_REGISTRY-}oceanviewwebapi
+    build:
+      context: .
+      dockerfile: OceanView.WebAPI/Dockerfile
+    depends_on:
+      - oceanview.searchservice
+
+  oceanview.searchservice:
+    image: ${DOCKER_REGISTRY-}oceanviewsearchservice
+    build:
+      context: .
+      dockerfile: OceanView.SearchService/Dockerfile
+    depends_on:
+      - oceanview.db
+      - oceanview.cache
+      - oceanview.messages
+    ports:
+      - '45422:45422'
+    environment:
+      ASPNETCORE_URLS: http://+:45422
+  
+  oceanview.db:
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=oceanview
+    ports:
+      - '5432:5432'
+    volumes: 
+      - db:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/create_tables.sql
+
+  oceanview.cache:
+    image: redis:6.2-alpine
+    restart: always
+    ports:
+      - '6379:6379'
+    environment:
+      - REDIS_PASSWORD=eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+    command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+    volumes: 
+      - cache:/data
+
+  oceanview.messages:
+    image: rabbitmq:4-management
+    restart: always
+    ports:
+      - '5672:5672'
+
+  oceanview.notificationservice:
+    image: ${DOCKER_REGISTRY-}oceanviewnotificationservice
+    build:
+      context: .
+      dockerfile: OceanView.NotificationService/Dockerfile
+    depends_on:
+      - oceanview.messages
+
+volumes:
+  cache:
+    driver: local
+  db:
+    driver: local

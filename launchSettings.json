@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "Docker Compose": {
+      "commandName": "DockerCompose",
+      "commandVersion": "1.0",
+      "serviceActions": {
+        "oceanview.webapi": "StartDebugging",
+        "oceanview.searchservice": "StartDebugging",
+        "oceanview.notificationservice": "StartDebugging"
+      }
+    }
+  }
+}
