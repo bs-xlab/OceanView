@@ -35,6 +35,8 @@ namespace OceanView.SearchService
             builder.Services.AddAutoMapper(cfg =>
             {
                 cfg.CreateMap<HotelDto, Hotel>();
+                cfg.CreateMap<HotelDto, HotelInfo>();
+                cfg.CreateMap<HotelInfo, Hotel>();
             });
 
             builder.Configuration.AddEnvironmentVariables();

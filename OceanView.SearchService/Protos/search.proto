@@ -6,7 +6,8 @@ package search;
 
 service GrpsSearchService {
   rpc Search (SearchRequest) returns (SearchIdReply);
-  rpc Get (GetRequest) returns (HotelsReply);
+  rpc Get (IdRequest) returns (HotelsReply);
+  rpc CancelSearch (IdRequest) returns (SearchIdReply);
 }
 
 message SearchRequest {
@@ -17,7 +18,7 @@ message SearchRequest {
   string Country = 5; 
 }
 
-message GetRequest {
+message IdRequest {
   string Id = 1;
 }
 
@@ -27,6 +28,7 @@ message SearchIdReply {
 
 message HotelsReply {
   repeated Hotel Hotels = 1;
+  bool IsSearchCompleted = 2;
 }
 
 message Hotel {

@@ -10,6 +10,7 @@ namespace OceanView.WebAPI
             var builder = WebApplication.CreateBuilder(args);
             builder.Services.AddAuthorization();
             builder.Configuration.AddEnvironmentVariables();
+            builder.Services.AddCors();
 
             builder.Services.AddGrpcClient<GrpsSearchService.GrpsSearchServiceClient>(options =>
             {
@@ -23,6 +24,11 @@ namespace OceanView.WebAPI
             app.UseHttpsRedirection();
             app.UseAuthorization();
 
+            app.UseCors(policy =>
+                policy.AllowAnyOrigin()
+                      .AllowAnyMethod()
+                      .AllowAnyHeader());
+
             app.MapPost("/search", async (HttpContext httpContext, GrpsSearchService.GrpsSearchServiceClient greeterClient, [FromBody] HotelSearchCriteria criteria) =>
             {
                 var reply = await greeterClient.SearchAsync(
@@ -33,7 +39,13 @@ namespace OceanView.WebAPI
 
             app.MapGet("/get", async (HttpContext httpContext, GrpsSearchService.GrpsSearchServiceClient searchClient, [FromQuery] string id) =>
             {
-                HotelsReply hotelsReply = await searchClient.GetAsync(new GetRequest { Id = id });
+                var hotelsReply = await searchClient.GetAsync(new IdRequest { Id = id });
+                return hotelsReply;
+            });
+
+            app.MapPost("/cancelSearch", async (HttpContext httpContext, GrpsSearchService.GrpsSearchServiceClient searchClient, [FromBody] string id) =>
+            {
+                var hotelsReply = await searchClient.CancelSearchAsync(new IdRequest { Id = id });
                 return hotelsReply;
             });
 
