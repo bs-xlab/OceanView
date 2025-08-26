@@ -23,10 +23,16 @@ namespace OceanView.SearchService.Services
             var hotelQuery = new GetHotelQuery(request.Id);
             var hotelResult = await _sender.Send(hotelQuery);
 
-            HotelsReply reply = new()
+            var reply = new HotelsReply()
             {
                 IsSearchCompleted = hotelResult.IsSearchCompleted || hotelResult.IsSearchInterrupted
             };
+
+            if (reply.IsSearchCompleted)
+            {
+                var notifyCommand = new NotifySearchCompletedCommand(request.Id, hotelResult.Hotels.Count);
+                await _sender.Send(notifyCommand);
+            }
 
             reply.Hotels.AddRange(_mapper.Map<IEnumerable<HotelInfo>, IEnumerable<Hotel>>(hotelResult.Hotels));
             return reply;

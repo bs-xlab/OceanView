@@ -6,13 +6,12 @@ using OceanView.Domain.Extensions;
 using OceanView.Domain.Interfaces;
 using OceanView.Domain.Models;
 using OceanView.SearchService.Features.Hotels.CQ;
-using RabbitMQ.Client;
 using System.Text.Json;
 
 namespace OceanView.SearchService.Features.Hotels.Handlers
 {
     public class SearchHotelCommandHandler(ILogger<SearchHotelCommandHandler> logger, IMapper mapper,
-        IDistributedCache cache, IServiceScopeFactory scopeFactory, ConnectionFactory connectionFactory) : IRequestHandler<SearchHotelCommand, string>
+        IDistributedCache cache, IServiceScopeFactory scopeFactory) : IRequestHandler<SearchHotelCommand, string>
     {
         private readonly ILogger<SearchHotelCommandHandler> _logger = logger;
 
@@ -21,8 +20,6 @@ namespace OceanView.SearchService.Features.Hotels.Handlers
         private readonly IDistributedCache _cache = cache;
 
         private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
-
-        private readonly ConnectionFactory _connectionFactory = connectionFactory;
 
         public async Task<string> Handle(SearchHotelCommand command, CancellationToken cancellationToken)
         {
@@ -92,18 +89,11 @@ namespace OceanView.SearchService.Features.Hotels.Handlers
                 throw;
             }
 
-            var brokerConnection = await _connectionFactory.CreateConnectionAsync();
+            var cache = await _cache.GetStringAsync(searchId) ?? OceanConstants.EmptyJsonObject;
+            var cacheResult = JsonSerializer.Deserialize<SavedSearchResult>(cache) ?? new SavedSearchResult();
 
-            _logger.LogInformation("Search with ID: {SearchId} completed. Collection count: {Offset}", searchId, offset);
-            var channel = await brokerConnection.CreateChannelAsync();
-
-            await channel.QueueDeclareAsync(queue: "search_completed",
-                durable: true, exclusive: false,
-                autoDelete: false, arguments: null);
-
-            await channel.BasicPublishAsync(exchange: "",
-                routingKey: "search_completed",
-                body: System.Text.Encoding.UTF8.GetBytes(searchId));
+            cacheResult.IsSearchCompleted = true;
+            await _cache.SetStringAsync(searchId, JsonSerializer.Serialize(cacheResult));
         }
     }
 }
