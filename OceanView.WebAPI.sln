@@ -15,7 +15,7 @@ Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-co
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OceanView.NotificationService", "OceanView.NotificationService\OceanView.NotificationService.csproj", "{89ADAA3A-361D-45CF-43EC-8DD12A4AB21D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OceanView.Tests", "..\OceanView.Tests\OceanView.Tests.csproj", "{9D7FFC70-F8EF-4D39-B8F7-24E884655693}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OceanView.Tests", "OceanView.Tests\OceanView.Tests.csproj", "{9D7FFC70-F8EF-4D39-B8F7-24E884655693}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

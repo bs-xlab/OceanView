@@ -80,15 +80,16 @@
   <script>
     // ======= CONFIG =======
     // If API is same origin, leave empty. Otherwise set e.g. "http://localhost:5056"
-    const API_BASE = "";
+    const API_BASE = "https://localhost:62243";
 
     // Endpoints (customize if yours differ)
-    const START_URL = `${API_BASE}/search`;            // POST { city, state, country } -> { searchId }
-    const RESULT_URL = (id) => `${API_BASE}/get?id=${id}`; // GET -> either {hotels:[...]} or [...]
+    const START_URL = `${API_BASE}/search`;
+    const STOP_URL = `${API_BASE}/cancelSearch`;
+    const RESULT_URL = (id) => `${API_BASE}/get?id=${id}`;
 
     // ======= STATE =======
     let pollTimer = null;
-    let currentSearchId = null;
+    let currentSearchId = '';
 
     // ======= DOM =======
     const form = document.getElementById("searchForm");
@@ -185,10 +186,35 @@
         pollTimer = null;
       }
       stopBtn.disabled = true;
+	  
+	  const cancel = async () => {
+        try {
+		  const res = await fetch(STOP_URL, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: '"' + currentSearchId + '"'
+		  });
+		
+          if (res.status === 404) {
+            // not ready yet
+            setStatus("Pending…", "warning");
+            return;
+          }
+          if (!res.ok) {
+            throw new Error(`Backend returned ${res.status}`);
+          }
+        } catch (err) {
+          setStatus("Polling error", "danger");
+          showAlert(`Polling failed: ${err.message}`);
+          // keep polling—could be transient
+        }
+      };
+
+      // Immediate poll, then every 5s
+      cancel();
     }
 
     function startPolling(searchId) {
-      stopPolling(); // ensure only one
       stopBtn.disabled = false;
 
       const poll = async () => {
@@ -206,6 +232,12 @@
           renderTable(payload);
           lastUpdate.textContent = isoNowShort();
           setStatus("Receiving results", "success");
+		  
+		  if (payload.isSearchCompleted) {
+			clearInterval(pollTimer);
+			pollTimer = null;
+			stopBtn.disabled = true;
+		  }
         } catch (err) {
           setStatus("Polling error", "danger");
           showAlert(`Polling failed: ${err.message}`);
@@ -251,6 +283,7 @@
           throw new Error("No searchId returned by API.");
         }
 
+		stopPolling();
         currentSearchId = searchId;
         searchIdLabel.textContent = searchId;
         setStatus("Polling…", "info");
