@@ -11,9 +11,9 @@ namespace OceanView.EFDataAccess.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            //var hotels = HotelSeeder.GenerateHotels(5000);
+            var hotels = HotelSeeder.GenerateHotels(5000);
 
-            //modelBuilder.Entity<HotelDto>().HasData(hotels);
+            modelBuilder.Entity<HotelDto>().HasData(hotels);
 
             base.OnModelCreating(modelBuilder);
         }
